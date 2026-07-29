@@ -75,8 +75,10 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: appimage-${{ matrix.arch }}
-          path: dist/*.AppImage
+          name: dist-${{ matrix.arch }}
+          path: |
+            dist/*.AppImage
+            dist/*.deb
 
   release:
     needs: [version, build]
@@ -102,7 +104,9 @@ jobs:
           name: Linear v${{ needs.version.outputs.version }}
           draft: false
           prerelease: false
-          files: dist/*.AppImage
+          files: |
+            dist/*.AppImage
+            dist/*.deb
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
