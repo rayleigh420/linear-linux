@@ -157,8 +157,10 @@ jobs:
           fi
 
       - name: Merge release back to master
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
           git fetch origin master
           git checkout master
-          git merge release --ff-only
+          git merge release --no-ff -m "chore: merge release v${VERSION} into master"
           git push origin master
