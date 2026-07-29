@@ -1,6 +1,7 @@
-import { app, BrowserWindow, WebContentsView, ipcMain, session, shell, Menu } from 'electron'
+import { app, BrowserWindow, WebContentsView, ipcMain, session, shell, Menu, Tray, nativeImage, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { autoUpdater } from 'electron-updater'
 import fs from 'fs'
 
 if (process.platform === 'linux') {
@@ -11,11 +12,13 @@ if (process.platform === 'linux') {
 }
 
 const TAB_HEIGHT = 38
+let tray = null
+let isQuitting = false
 
 // ── Tab ───────────────────────────────────────────────────────────────────────
 
 class Tab {
-    constructor(win, url = 'https://linear.app') {
+    constructor(win) {
         this.title = 'Linear'
         this.view = new WebContentsView({
             webPreferences: { nodeIntegration: false, contextIsolation: true },
@@ -51,9 +54,22 @@ class LinearWindow {
         this.createTab(url)
 
         this.#win.on('resize', () => this.#relayout())
-        this.#win.on('close', () => WindowState.save(this.#win.getBounds()))
+        this.#win.on('close', (e) => {
+            WindowState.save(this.#win.getBounds())
+            if (!isQuitting) {
+                e.preventDefault()
+                this.#win.hide()
+            }
+        })
         this.#win.on('closed', () => this.#destroy())
     }
+
+    show() {
+        this.#win.show()
+        this.#win.focus()
+    }
+
+    getBrowserWindow() { return this.#win }
 
     #setupTabBar() {
         this.#tabBarView = new WebContentsView({
@@ -75,7 +91,7 @@ class LinearWindow {
     }
 
     createTab(url = 'https://linear.app') {
-        const tab = new Tab(this.#win, url)
+        const tab = new Tab(this.#win)
         this.#tabs.push(tab)
         LinearWindow.#instances.set(tab.view.webContents, this)
 
@@ -134,14 +150,16 @@ class LinearWindow {
     showContextMenu(index) {
         const url = this.#tabs[index]?.view.webContents.getURL() ?? 'https://linear.app'
         Menu.buildFromTemplate([
-            { label: 'New tab',          click: () => this.createTab() },
+            { label: 'New tab', click: () => this.createTab() },
             { label: 'Open in new window', click: () => new LinearWindow(url) },
             { type: 'separator' },
-            { label: 'Reload',           click: () => this.reloadTab(index) },
+            { label: 'Reload', click: () => this.reloadTab(index) },
             { type: 'separator' },
-            { label: 'Close tab',        click: () => this.closeTab(index) },
-            { label: 'Close other tabs', enabled: this.#tabs.length > 1,
-              click: () => this.closeOtherTabs(index) },
+            { label: 'Close tab', click: () => this.closeTab(index) },
+            {
+                label: 'Close other tabs', enabled: this.#tabs.length > 1,
+                click: () => this.closeOtherTabs(index)
+            },
         ]).popup({ window: this.#win })
     }
 
@@ -207,11 +225,13 @@ class WindowState {
         try {
             const { width, height, x, y } = JSON.parse(fs.readFileSync(WindowState.#path, 'utf8'))
             if (Number.isFinite(width) && Number.isFinite(height)) {
-                return { width, height,
+                return {
+                    width, height,
                     x: Number.isFinite(x) ? x : null,
-                    y: Number.isFinite(y) ? y : null }
+                    y: Number.isFinite(y) ? y : null
+                }
             }
-        } catch (_) {}
+        } catch (_) { }
         return {}
     }
 
@@ -220,16 +240,107 @@ class WindowState {
         try {
             fs.mkdirSync(join(WindowState.#path, '..'), { recursive: true })
             fs.writeFileSync(WindowState.#path, JSON.stringify(bounds), 'utf8')
-        } catch (_) {}
+        } catch (_) { }
+    }
+}
+
+// ── System Tray ───────────────────────────────────────────────────────────────
+
+function getIconPath() {
+    if (is.dev) return join(__dirname, '../../resources/icon.png')
+    return join(process.resourcesPath, 'icon.png')
+}
+
+function focusOrCreate() {
+    const wins = BrowserWindow.getAllWindows()
+    if (wins.length === 0) {
+        new LinearWindow()
+    } else {
+        wins.forEach((w) => { w.show(); w.focus() })
+    }
+}
+
+function createTray() {
+    const icon = nativeImage.createFromPath(getIconPath()).resize({ width: 22, height: 22 })
+    tray = new Tray(icon)
+    tray.setToolTip('Linear')
+    tray.on('activate', focusOrCreate)    // macOS click
+    tray.on('double-click', focusOrCreate) // Windows/Linux double-click
+
+    tray.setContextMenu(Menu.buildFromTemplate([
+        { label: 'Open Linear', click: focusOrCreate },
+        { type: 'separator' },
+        { label: 'Check for Updates', click: () => Updater.check(true) },
+        { type: 'separator' },
+        { label: 'Quit Linear', click: () => { isQuitting = true; app.quit() } },
+    ]))
+}
+
+// ── Auto Updater ──────────────────────────────────────────────────────────────
+
+class Updater {
+    static #isNix = process.execPath.includes('/nix/store')
+
+    static setup() {
+        if (Updater.#isNix) return // Nix manages the package
+
+        autoUpdater.autoDownload = false
+        autoUpdater.autoInstallOnAppQuit = true
+
+        autoUpdater.on('update-available', (info) => {
+            dialog.showMessageBox({
+                type: 'info',
+                title: 'Update Available',
+                message: `Linear v${info.version} is available`,
+                detail: 'Download now and install when you quit?',
+                buttons: ['Download', 'Later'],
+                defaultId: 0,
+            }).then(({ response }) => {
+                if (response === 0) autoUpdater.downloadUpdate()
+            })
+        })
+
+        autoUpdater.on('update-downloaded', () => {
+            dialog.showMessageBox({
+                type: 'info',
+                title: 'Update Ready',
+                message: 'Update downloaded',
+                detail: 'Restart Linear to install the new version.',
+                buttons: ['Restart Now', 'Later'],
+                defaultId: 0,
+            }).then(({ response }) => {
+                if (response === 0) {
+                    isQuitting = true
+                    autoUpdater.quitAndInstall()
+                }
+            })
+        })
+
+        autoUpdater.on('update-not-available', (_, explicit) => {
+            if (explicit) dialog.showMessageBox({ type: 'info', title: 'No Updates', message: 'Linear is up to date.' })
+        })
+
+        autoUpdater.on('error', () => { }) // silence network errors
+
+        setTimeout(() => Updater.check(false), 5000) // check on startup
+    }
+
+    static check(explicit = false) {
+        if (Updater.#isNix) {
+            if (explicit) dialog.showMessageBox({ type: 'info', title: 'Managed by Nix', message: 'Run nix flake update to check for updates.' })
+            return
+        }
+        autoUpdater.checkForUpdates().catch(() => { })
+        if (explicit) autoUpdater['_explicit'] = true
     }
 }
 
 // ── IPC ───────────────────────────────────────────────────────────────────────
 
-ipcMain.on('tab-create',       (e)    => LinearWindow.fromSender(e.sender)?.createTab())
-ipcMain.on('tab-switch',       (e, i) => LinearWindow.fromSender(e.sender)?.switchToTab(i))
-ipcMain.on('tab-close',        (e, i) => LinearWindow.fromSender(e.sender)?.closeTab(i))
-ipcMain.on('tab-reload',       (e, i) => LinearWindow.fromSender(e.sender)?.reloadTab(i))
+ipcMain.on('tab-create', (e) => LinearWindow.fromSender(e.sender)?.createTab())
+ipcMain.on('tab-switch', (e, i) => LinearWindow.fromSender(e.sender)?.switchToTab(i))
+ipcMain.on('tab-close', (e, i) => LinearWindow.fromSender(e.sender)?.closeTab(i))
+ipcMain.on('tab-reload', (e, i) => LinearWindow.fromSender(e.sender)?.reloadTab(i))
 ipcMain.on('tab-close-others', (e, i) => LinearWindow.fromSender(e.sender)?.closeOtherTabs(i))
 ipcMain.on('tab-context-menu', (e, i) => LinearWindow.fromSender(e.sender)?.showContextMenu(i))
 
@@ -246,13 +357,12 @@ app.whenReady().then(() => {
         callback(permission === 'notifications' && isLinear)
     })
 
+    createTray()
     new LinearWindow()
+    Updater.setup()
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) new LinearWindow()
-    })
+    app.on('activate', focusOrCreate) // macOS dock click
 })
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
-})
+// App lives in tray — don't quit when all windows are closed
+app.on('window-all-closed', () => { })

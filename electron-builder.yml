@@ -8,11 +8,14 @@ files:
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+publish:
+  provider: github
+  owner: rayleigh420
+  repo: linear-linux
 linux:
   target:
     - AppImage
+    - deb
   category: Utility
-  artifactName: linear-linux-${version}-${arch}.${ext}
-appImage:
   artifactName: linear-linux-${version}-${arch}.${ext}
 npmRebuild: false
