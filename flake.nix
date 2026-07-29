@@ -30,29 +30,34 @@
             url = sources.${system}.url;
             hash = sources.${system}.hash;
           };
-        in
-        {
-          linear-linux = pkgs.appimageTools.wrapType2 {
+          appimageContents = pkgs.appimageTools.extractType2 {
+            pname = "linear-linux";
+            inherit version src;
+          };
+          unwrapped = pkgs.appimageTools.wrapType2 {
             pname = "linear-linux";
             inherit version src;
 
-            extraInstallCommands =
-              let
-                appimageContents = pkgs.appimageTools.extractType2 {
-                  pname = "linear-linux";
-                  inherit version src;
-                };
-              in
-              ''
-                install -Dm644 ${appimageContents}/linear-linux.desktop \
-                  $out/share/applications/linear-linux.desktop
-                substituteInPlace $out/share/applications/linear-linux.desktop \
-                  --replace-warn 'Exec=AppRun' 'Exec=linear-linux'
+            extraInstallCommands = ''
+              install -Dm644 ${appimageContents}/linear-linux.desktop \
+                $out/share/applications/linear-linux.desktop
+              substituteInPlace $out/share/applications/linear-linux.desktop \
+                --replace-warn 'Exec=AppRun' 'Exec=linear-linux'
 
-                install -Dm644 ${appimageContents}/usr/share/icons/hicolor/1024x1024/apps/linear-linux.png \
-                  $out/share/icons/hicolor/1024x1024/apps/linear-linux.png
-              '';
-
+              install -Dm644 ${appimageContents}/usr/share/icons/hicolor/1024x1024/apps/linear-linux.png \
+                $out/share/icons/hicolor/1024x1024/apps/linear-linux.png
+            '';
+          };
+        in
+        {
+          linear-linux = pkgs.symlinkJoin {
+            name = "linear-linux-${version}";
+            paths = [ unwrapped ];
+            nativeBuildInputs = [ pkgs.makeWrapper ];
+            postBuild = ''
+              wrapProgram $out/bin/linear-linux \
+                --add-flags "--no-sandbox --disable-dev-shm-usage"
+            '';
             meta = with pkgs.lib; {
               description = "Unofficial Linux desktop client for Linear (linear.app)";
               homepage = "https://github.com/rayleigh420/linear-linux";
