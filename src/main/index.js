@@ -282,7 +282,7 @@ class Updater {
     static #isNix = process.execPath.includes('/nix/store')
 
     static setup() {
-        if (Updater.#isNix) return // Nix manages the package
+        if (Updater.#isNix) return
 
         autoUpdater.autoDownload = false
         autoUpdater.autoInstallOnAppQuit = true
@@ -309,29 +309,23 @@ class Updater {
                 buttons: ['Restart Now', 'Later'],
                 defaultId: 0,
             }).then(({ response }) => {
-                if (response === 0) {
-                    isQuitting = true
-                    autoUpdater.quitAndInstall()
-                }
+                if (response === 0) { isQuitting = true; autoUpdater.quitAndInstall() }
             })
         })
 
-        autoUpdater.on('update-not-available', (_, explicit) => {
-            if (explicit) dialog.showMessageBox({ type: 'info', title: 'No Updates', message: 'Linear is up to date.' })
-        })
-
-        autoUpdater.on('error', () => { }) // silence network errors
-
-        setTimeout(() => Updater.check(false), 5000) // check on startup
+        autoUpdater.on('error', () => {})
+        setTimeout(() => Updater.check(false), 5000)
     }
 
     static check(explicit = false) {
         if (Updater.#isNix) {
-            if (explicit) dialog.showMessageBox({ type: 'info', title: 'Managed by Nix', message: 'Run nix flake update to check for updates.' })
+            if (explicit) dialog.showMessageBox({
+                type: 'info', title: 'Managed by Nix',
+                message: 'Run nix flake update to check for updates.',
+            })
             return
         }
-        autoUpdater.checkForUpdates().catch(() => { })
-        if (explicit) autoUpdater['_explicit'] = true
+        autoUpdater.checkForUpdates().catch(() => {})
     }
 }
 
