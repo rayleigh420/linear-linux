@@ -17,5 +17,6 @@ linux:
     - AppImage
     - deb
   category: Utility
+  maintainer: rayleigh420 <rayleigh420@users.noreply.github.com>
   artifactName: linear-linux-${version}-${arch}.${ext}
 npmRebuild: false
