@@ -92,3 +92,9 @@ jobs:
             git commit -m "chore: update flake.nix hashes for v${VERSION}"
             git push
           fi
+
+      - name: Merge release back to main
+        run: |
+          git checkout main
+          git merge release --ff-only
+          git push origin main
