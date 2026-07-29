@@ -93,8 +93,8 @@ jobs:
             git push
           fi
 
-      - name: Merge release back to main
+      - name: Merge release back to master
         run: |
-          git checkout main
+          git checkout master
           git merge release --ff-only
-          git push origin main
+          git push origin master
