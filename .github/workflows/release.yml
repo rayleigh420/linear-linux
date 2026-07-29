@@ -37,11 +37,26 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          npm version "${BUMP:-patch}" -m "chore: release %s"
+
+          # Preview next version without committing
+          NEXT=$(npm version "${BUMP:-patch}" --no-git-tag-version | tr -d 'v')
+          git checkout -- package.json package-lock.json
+
+          # If tag already exists (re-run after partial failure), reuse it
+          if git ls-remote --tags origin | grep -q "refs/tags/v${NEXT}$"; then
+            echo "Tag v${NEXT} already exists, reusing for re-run"
+            npm version "${NEXT}" --no-git-tag-version
+            git add package.json package-lock.json
+            git diff --cached --quiet || git commit -m "chore: release ${NEXT}"
+            git push || true
+          else
+            npm version "${BUMP:-patch}" -m "chore: release %s"
+            git push
+            git push --tags
+          fi
+
           VERSION=$(node -p "require('./package.json').version")
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          git push
-          git push --tags
 
   build:
     needs: version
