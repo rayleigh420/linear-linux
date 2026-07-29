@@ -1,6 +1,6 @@
 {
   "name": "linear-linux",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Linux support for linear.app",
   "main": "index.js",
   "scripts": {
