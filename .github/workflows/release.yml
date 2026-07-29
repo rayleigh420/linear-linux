@@ -12,27 +12,23 @@ on:
       - release
 
 jobs:
-  build-and-release:
+  version:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           persist-credentials: true
           fetch-depth: 0
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Bump version and tag
         id: bump
@@ -47,30 +43,73 @@ jobs:
           git push
           git push --tags
 
-      - name: Build artifacts
+  build:
+    needs: version
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build AppImage
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm run build:linux
+        run: npm run build:linux
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-${{ matrix.arch }}
+          path: dist/*.AppImage
+
+  release:
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: release
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.bump.outputs.version }}
-          name: Linear v${{ steps.bump.outputs.version }}
+          tag_name: v${{ needs.version.outputs.version }}
+          name: Linear v${{ needs.version.outputs.version }}
           draft: false
           prerelease: false
-          files: |
-            dist/*.AppImage
-            dist/*.deb
-            dist/*.rpm
+          files: dist/*.AppImage
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
 
       - name: Update flake.nix hashes
         env:
-          VERSION: ${{ steps.bump.outputs.version }}
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
           X86_SRI=$(nix-hash --type sha256 --flat --sri dist/linear-linux-${VERSION}-x86_64.AppImage)
           ARM_SRI=$(nix-hash --type sha256 --flat --sri dist/linear-linux-${VERSION}-arm64.AppImage)
@@ -84,8 +123,10 @@ jobs:
 
       - name: Commit flake.nix update
         env:
-          VERSION: ${{ steps.bump.outputs.version }}
+          VERSION: ${{ needs.version.outputs.version }}
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add flake.nix
           if git diff --cached --quiet; then
             echo "No changes to flake.nix"

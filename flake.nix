@@ -44,13 +44,11 @@
                 };
               in
               ''
-                # Install desktop file
                 install -Dm644 ${appimageContents}/linear-linux.desktop \
                   $out/share/applications/linear-linux.desktop
                 substituteInPlace $out/share/applications/linear-linux.desktop \
                   --replace-warn 'Exec=AppRun' 'Exec=linear-linux'
 
-                # Install icons
                 install -Dm644 ${appimageContents}/usr/share/icons/hicolor/1024x1024/apps/linear-linux.png \
                   $out/share/icons/hicolor/1024x1024/apps/linear-linux.png
               '';
