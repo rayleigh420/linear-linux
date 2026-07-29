@@ -1,6 +1,6 @@
 {
   "name": "linear-linux",
-  "version": "0.2.17",
+  "version": "0.2.18",
   "description": "Linux support for linear.app",
   "main": "./out/main/index.js",
   "author": "Selimaj Dev",
