@@ -11,12 +11,12 @@
 
       sources = {
         x86_64-linux = {
-          url = "https://github.com/kleo-dev/linear-linux/releases/download/v${version}/linear-linux-${version}-x86_64.AppImage";
-          hash = "sha256-NBmfXyrmtBccOLLzBiwbkCyA8IGxtY+AQIgAVxfrank="; # x86_64
+          url = "https://github.com/rayleigh420/linear-linux/releases/download/v${version}/linear-linux-${version}-x86_64.AppImage";
+          hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # x86_64
         };
         aarch64-linux = {
-          url = "https://github.com/kleo-dev/linear-linux/releases/download/v${version}/linear-linux-${version}-arm64.AppImage";
-          hash = "sha256-nNDo7cq05as0qoEbd1UkOG+s8PzFZxnovcqLsg11RlU="; # aarch64
+          url = "https://github.com/rayleigh420/linear-linux/releases/download/v${version}/linear-linux-${version}-arm64.AppImage";
+          hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="; # aarch64
         };
       };
 
@@ -57,7 +57,7 @@
 
             meta = with pkgs.lib; {
               description = "Unofficial Linux desktop client for Linear (linear.app)";
-              homepage = "https://github.com/kleo-dev/linear-linux";
+              homepage = "https://github.com/rayleigh420/linear-linux";
               license = licenses.isc;
               platforms = [ "x86_64-linux" "aarch64-linux" ];
               mainProgram = "linear-linux";

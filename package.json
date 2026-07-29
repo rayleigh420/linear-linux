@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kleo-dev/linear-linux.git"
+    "url": "git+https://github.com/rayleigh420/linear-linux.git"
   },
   "keywords": [],
   "author": "Selimaj Dev",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/kleo-dev/linear-linux/issues"
+    "url": "https://github.com/rayleigh420/linear-linux/issues"
   },
-  "homepage": "https://github.com/kleo-dev/linear-linux#readme",
+  "homepage": "https://github.com/rayleigh420/linear-linux#readme",
   "build": {
     "appId": "app.linear.linux",
     "productName": "Linear",
