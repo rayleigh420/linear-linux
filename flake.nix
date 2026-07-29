@@ -56,7 +56,7 @@
             nativeBuildInputs = [ pkgs.makeWrapper ];
             postBuild = ''
               wrapProgram $out/bin/linear-linux \
-                --add-flags "--no-sandbox --disable-dev-shm-usage"
+                --add-flags "--no-sandbox --disable-dev-shm-usage --font-render-hinting=none"
             '';
             meta = with pkgs.lib; {
               description = "Unofficial Linux desktop client for Linear (linear.app)";
