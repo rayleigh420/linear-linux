@@ -280,12 +280,24 @@ function createTray() {
 
 class Updater {
     static #isNix = process.execPath.includes('/nix/store')
+    static #explicit = false
 
     static setup() {
         if (Updater.#isNix) return
 
         autoUpdater.autoDownload = false
         autoUpdater.autoInstallOnAppQuit = true
+
+        autoUpdater.on('update-not-available', () => {
+            if (Updater.#explicit) {
+                Updater.#explicit = false
+                dialog.showMessageBox({
+                    type: 'info',
+                    title: 'Up to Date',
+                    message: 'Linear is up to date.',
+                })
+            }
+        })
 
         autoUpdater.on('update-available', (info) => {
             dialog.showMessageBox({
@@ -325,7 +337,8 @@ class Updater {
             })
             return
         }
-        autoUpdater.checkForUpdates().catch(() => {})
+        Updater.#explicit = explicit
+        autoUpdater.checkForUpdates().catch(() => { Updater.#explicit = false })
     }
 }
 
