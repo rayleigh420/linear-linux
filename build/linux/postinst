@@ -1,0 +1,7 @@
+#!/bin/bash
+# Hand ownership of the install dir to the first human user so
+# electron-updater can update in-place without root.
+FIRST_USER=$(getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 { print $1; exit }')
+if [ -n "$FIRST_USER" ]; then
+    chown -R "$FIRST_USER:$FIRST_USER" /opt/Linear/
+fi

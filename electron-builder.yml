@@ -24,4 +24,6 @@ linux:
     - --no-sandbox
     - --disable-dev-shm-usage
     - --disable-gpu-sandbox
+deb:
+  afterInstall: build/linux/postinst
 npmRebuild: false
