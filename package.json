@@ -2,47 +2,37 @@
   "name": "linear-linux",
   "version": "0.2.12",
   "description": "Linux support for linear.app",
-  "main": "src/main.js",
-  "scripts": {
-    "start": "CHROME_DEVEL_SANDBOX=${CHROME_DEVEL_SANDBOX:-/opt/linear-linux/squashfs-root/chrome-sandbox} ELECTRON_DISABLE_SANDBOX=1 npx electron src/main.js",
-    "dev": "ELECTRON_DISABLE_SANDBOX=1 electron src/main.js",
-    "build": "npx electron-builder --linux AppImage --x64 --arm64"
-  },
+  "main": "./out/main/index.js",
+  "author": "Selimaj Dev",
+  "license": "ISC",
+  "homepage": "https://github.com/rayleigh420/linear-linux#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rayleigh420/linear-linux.git"
   },
-  "keywords": [],
-  "author": "Selimaj Dev",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/rayleigh420/linear-linux/issues"
   },
-  "homepage": "https://github.com/rayleigh420/linear-linux#readme",
-  "build": {
-    "appId": "app.linear.linux",
-    "productName": "Linear",
-    "files": [
-      "src/**/*",
-      "assets/**/*"
-    ],
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "category": "Utility",
-      "icon": "assets/linear-app-icon.png",
-      "artifactName": "linear-linux-${version}-${arch}.${ext}"
-    },
-    "extraResources": [
-      {
-        "from": "assets",
-        "to": "assets"
-      }
-    ]
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "eslint --cache .",
+    "dev": "electron-vite dev -- --no-sandbox --disable-dev-shm-usage",
+    "build": "electron-vite build",
+    "start": "ELECTRON_DISABLE_SANDBOX=1 electron-vite preview",
+    "build:linux": "npm run build && electron-builder --linux",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "@electron-toolkit/preload": "^3.0.2",
+    "@electron-toolkit/utils": "^4.0.0"
   },
   "devDependencies": {
+    "@electron-toolkit/eslint-config": "^2.1.0",
+    "@electron-toolkit/eslint-config-prettier": "^3.0.0",
     "electron": "43.2.0",
-    "electron-builder": "^26.15.3"
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "eslint": "^10.8.0",
+    "prettier": "^3.9.6"
   }
 }
