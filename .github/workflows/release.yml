@@ -79,6 +79,7 @@ jobs:
           path: |
             dist/*.AppImage
             dist/*.deb
+            dist/*.yml
 
   release:
     needs: [version, build]
@@ -107,6 +108,7 @@ jobs:
           files: |
             dist/*.AppImage
             dist/*.deb
+            dist/*.yml
 
       - name: Install Nix
         uses: cachix/install-nix-action@v31
