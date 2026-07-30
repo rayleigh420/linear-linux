@@ -24,6 +24,7 @@ jobs:
         with:
           persist-credentials: true
           fetch-depth: 0
+          token: ${{ secrets.ADMIN_PAT }}
 
       - uses: actions/setup-node@v6
         with:
@@ -106,6 +107,7 @@ jobs:
         with:
           ref: release
           fetch-depth: 0
+          token: ${{ secrets.ADMIN_PAT }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
