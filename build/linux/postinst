@@ -1,7 +1,16 @@
 #!/bin/bash
+set -e
+
 # Hand ownership of the install dir to the first human user so
 # electron-updater can update in-place without root.
 FIRST_USER=$(getent passwd | awk -F: '$3 >= 1000 && $3 < 65534 { print $1; exit }')
 if [ -n "$FIRST_USER" ]; then
     chown -R "$FIRST_USER:$FIRST_USER" /opt/Linear/
 fi
+
+# Create terminal command in PATH
+ln -sf /opt/Linear/linear-linux /usr/local/bin/linear-linux
+
+# Refresh GNOME icon cache and desktop database so icon shows immediately
+update-desktop-database /usr/share/applications/ 2>/dev/null || true
+gtk-update-icon-cache -f -t /usr/share/icons/hicolor/ 2>/dev/null || true
