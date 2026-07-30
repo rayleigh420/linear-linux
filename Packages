@@ -1,15 +1,15 @@
 Package: linear-linux
-Version: 0.2.32
+Version: 0.2.54
 Architecture: amd64
 Maintainer: rayleigh420 <rayleigh420@users.noreply.github.com>
 Installed-Size: 324308
 Depends: libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0
 Recommends: libappindicator3-1
-Filename: ./linear-linux-0.2.32-amd64.deb
-Size: 102642904
-MD5sum: 38b97b28e0833049b2b19bd5328355c5
-SHA1: 9b1756988bcef7dab74763c2eb8dbf0b85b7f39d
-SHA256: b8bfcf79060d04dd64d47554342979b1cca864faf3510e5b0e6be4f1c8d4f490
+Filename: ./linear-linux-0.2.54-amd64.deb
+Size: 102642440
+MD5sum: 465ff417ee12f7cab9ff81a91d597db4
+SHA1: 9ebe04c8d5e78e6bd9a1078af26b3d49589c0e10
+SHA256: 13e22c4a976cc95361a33a1060bf99eacd2f67d554a36cafd15ae5416201c6f4
 Section: default
 Priority: optional
 Homepage: https://github.com/rayleigh420/linear-linux#readme
@@ -19,17 +19,17 @@ License: ISC
 Vendor: rayleigh420 <rayleigh420@users.noreply.github.com>
 
 Package: linear-linux
-Version: 0.2.32
+Version: 0.2.54
 Architecture: arm64
 Maintainer: rayleigh420 <rayleigh420@users.noreply.github.com>
 Installed-Size: 325676
 Depends: libgtk-3-0, libnotify4, libnss3, libxss1, libxtst6, xdg-utils, libatspi2.0-0, libuuid1, libsecret-1-0
 Recommends: libappindicator3-1
-Filename: ./linear-linux-0.2.32-arm64.deb
-Size: 96773344
-MD5sum: 79178180c9df449e755dd7329c7e8472
-SHA1: 2477b57126d0db3dc69d631db1eceeb3e39779da
-SHA256: 9809364fd81c7f1aede2651d6874c4e8841c69e10be3c3395f86575d47d01523
+Filename: ./linear-linux-0.2.54-arm64.deb
+Size: 96773500
+MD5sum: 0220c4838c8b20aa11e7b952a0b54c1a
+SHA1: a9c761f6a6fc0b0fbda6fc24f0c54655ff24e5fe
+SHA256: 2604d63b1f25661136cc144a69521cfed7dcb3eb308280902b789a6839a4fb9b
 Section: default
 Priority: optional
 Homepage: https://github.com/rayleigh420/linear-linux#readme
