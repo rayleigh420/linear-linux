@@ -11,6 +11,13 @@ fi
 # Create terminal command in PATH
 ln -sf /opt/Linear/linear-linux /usr/local/bin/linear-linux
 
+# Copy icon to sizes registered in hicolor/index.theme (1024x1024 is not in it)
+for size in 512x512 256x256 128x128; do
+    mkdir -p "/usr/share/icons/hicolor/${size}/apps/"
+    cp "/usr/share/icons/hicolor/1024x1024/apps/linear-linux.png" \
+       "/usr/share/icons/hicolor/${size}/apps/linear-linux.png" 2>/dev/null || true
+done
+
 # Refresh GNOME icon cache and desktop database so icon shows immediately
 update-desktop-database /usr/share/applications/ 2>/dev/null || true
 gtk-update-icon-cache -f -t /usr/share/icons/hicolor/ 2>/dev/null || true
