@@ -155,6 +155,7 @@ jobs:
             echo "No changes to flake.nix"
           else
             git commit -m "chore: update flake.nix hashes for v${VERSION}"
+            git pull --rebase origin release
             git push
           fi
 
