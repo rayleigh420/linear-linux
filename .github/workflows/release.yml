@@ -207,7 +207,7 @@ jobs:
 
           git add -A
           git diff --cached --quiet || git commit -m "apt: release v${VERSION}"
-          git push origin gh-pages
+          git push origin HEAD:gh-pages
 
       - name: Merge release back to master
         env:
