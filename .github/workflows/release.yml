@@ -24,6 +24,7 @@ jobs:
         with:
           persist-credentials: true
           fetch-depth: 0
+          token: ${{ secrets.ADMIN_PAT }}
 
       - uses: actions/setup-node@v6
         with:
@@ -47,10 +48,10 @@ jobs:
             echo "Tag v${NEXT} already exists, reusing for re-run"
             npm version "${NEXT}" --no-git-tag-version
             git add package.json package-lock.json
-            git diff --cached --quiet || git commit -m "chore: release ${NEXT}"
+            git diff --cached --quiet || git commit -m "chore: release ${NEXT} [skip ci]"
             git push || true
           else
-            npm version "${BUMP:-patch}" -m "chore: release %s"
+            npm version "${BUMP:-patch}" -m "chore: release %s [skip ci]"
             git push
             git push --tags
           fi
@@ -106,6 +107,7 @@ jobs:
         with:
           ref: release
           fetch-depth: 0
+          token: ${{ secrets.ADMIN_PAT }}
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -152,7 +154,8 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to flake.nix"
           else
-            git commit -m "chore: update flake.nix hashes for v${VERSION}"
+            git commit -m "chore: update flake.nix hashes for v${VERSION} [skip ci]"
+            git pull --rebase origin release
             git push
           fi
 
@@ -206,7 +209,7 @@ jobs:
           gpg --batch --yes --clearsign -o InRelease Release
 
           git add -A
-          git diff --cached --quiet || git commit -m "apt: release v${VERSION}"
+          git diff --cached --quiet || git commit -m "apt: release v${VERSION} [skip ci]"
           git push origin HEAD:gh-pages
 
       - name: Merge release back to master
@@ -215,5 +218,5 @@ jobs:
         run: |
           git fetch origin master
           git checkout master
-          git merge release --no-ff -m "chore: merge release v${VERSION} into master"
+          git merge release --no-ff -m "chore: merge release v${VERSION} into master [skip ci]"
           git push origin master
