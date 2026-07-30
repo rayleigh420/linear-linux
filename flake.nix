@@ -7,16 +7,16 @@
 
   outputs = { self, nixpkgs }:
     let
-      version = "0.2.28";
+      version = "0.2.31";
 
       sources = {
         x86_64-linux = {
           url = "https://github.com/rayleigh420/linear-linux/releases/download/v${version}/linear-linux-${version}-x86_64.AppImage";
-          hash = "sha256-f2wq/7cmQUDTBv82j8FCWG+DE0PHalGPgKas0U7sU8o="; # x86_64
+          hash = "sha256-b0Rh+Za/zTLEXi4MQbzn8XkIF9e+J8A1jeJDv1iUA80="; # x86_64
         };
         aarch64-linux = {
           url = "https://github.com/rayleigh420/linear-linux/releases/download/v${version}/linear-linux-${version}-arm64.AppImage";
-          hash = "sha256-UD01S+SiEBL1PB1Pf81bT1/L5jJOW3v3mIf12rDLac4="; # aarch64
+          hash = "sha256-qRinkF/TbgqKilEXPONsxXpTq36lbcbd//eK1HHkgd0="; # aarch64
         };
       };
 

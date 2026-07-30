@@ -156,6 +156,59 @@ jobs:
             git push
           fi
 
+      - name: Update apt repository on gh-pages
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin gh-pages
+          git worktree add /tmp/gh-pages origin/gh-pages
+
+          # Export public key (derived from imported private key)
+          gpg --armor --export rayleigh420@users.noreply.github.com > /tmp/gh-pages/gpg.key
+
+          cd /tmp/gh-pages
+
+          # Replace debs — keep only latest version
+          rm -f *.deb
+          cp "$GITHUB_WORKSPACE/dist"/*.deb .
+
+          # Generate apt metadata
+          sudo apt-get install -y --no-install-recommends dpkg-dev 2>/dev/null || true
+          dpkg-scanpackages --multiversion . > Packages
+          gzip -9 -k -f Packages
+
+          # Generate Release file with checksums
+          {
+            echo "Origin: Linear Linux"
+            echo "Label: Linear Linux"
+            echo "Suite: stable"
+            echo "Date: $(date -Ru)"
+            echo "Architectures: amd64 arm64"
+            echo "Components: ./"
+            echo "MD5Sum:"
+            for f in Packages Packages.gz; do
+              printf " %s %d %s\n" "$(md5sum "$f" | cut -d' ' -f1)" "$(wc -c < "$f")" "$f"
+            done
+            echo "SHA256:"
+            for f in Packages Packages.gz; do
+              printf " %s %d %s\n" "$(sha256sum "$f" | cut -d' ' -f1)" "$(wc -c < "$f")" "$f"
+            done
+          } > Release
+
+          # Sign
+          gpg --batch --yes -abs -o Release.gpg Release
+          gpg --batch --yes --clearsign -o InRelease Release
+
+          git add -A
+          git diff --cached --quiet || git commit -m "apt: release v${VERSION}"
+          git push origin HEAD:gh-pages
+
       - name: Merge release back to master
         env:
           VERSION: ${{ needs.version.outputs.version }}
