@@ -4,45 +4,67 @@
     padding: 0;
 }
 
-body {
-    height: 38px;
-    background: #161618;
-    display: flex;
-    align-items: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    color: #8b8b8f;
-    overflow: hidden;
-    border-bottom: 1px solid #27272b;
-    -webkit-app-region: drag;
-}
-
-.tabs {
-    display: flex;
-    align-items: center;
+html, body {
+    width: 100%;
     height: 100%;
-    padding: 0 6px;
-    gap: 1px;
-    flex: 1;
     overflow: hidden;
-    -webkit-app-region: no-drag;
+    background: #0f0f10;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
-.tab {
+#root {
+    width: 100%;
+    height: 100%;
+}
+
+/* ── Dockview theme overrides ─────────────────────────────────────────────── */
+
+.dv-dockview {
+    --dv-background-color: #0f0f10;
+    --dv-separator-border: #27272b;
+    --dv-paneview-active-outline-color: #5e5ce6;
+
+    /* tabs container */
+    --dv-tabs-and-actions-container-background-color: #161618;
+    --dv-tabs-and-actions-container-height: 38px;
+    --dv-tabs-and-actions-container-font-size: 11.5px;
+
+    /* tab */
+    --dv-activegroup-visiblepanel-tab-background-color: #28282c;
+    --dv-activegroup-hiddenpanel-tab-background-color: transparent;
+    --dv-inactivegroup-visiblepanel-tab-background-color: #222225;
+    --dv-inactivegroup-hiddenpanel-tab-background-color: transparent;
+
+    --dv-tab-divider-color: transparent;
+    --dv-tab-close-icon: none;
+
+    /* header border */
+    --dv-group-view-background-color: #161618;
+}
+
+/* hide default tab content — we use createTabComponent */
+.dv-tab .dv-default-tab {
+    display: none;
+}
+
+.dv-tabs-and-actions-container {
+    border-bottom: 1px solid #27272b;
+}
+
+/* ── Custom tab component ─────────────────────────────────────────────────── */
+
+.tab-item {
     display: flex;
     align-items: center;
     height: 26px;
     padding: 0 6px 0 8px;
-    border-radius: 5px;
-    cursor: pointer;
-    max-width: 200px;
-    min-width: 72px;
     gap: 5px;
-    flex-shrink: 1;
-    transition: background 0.1s;
+    min-width: 72px;
+    max-width: 200px;
+    cursor: pointer;
+    color: #8b8b8f;
+    -webkit-app-region: no-drag;
 }
-
-.tab:hover { background: #222225; }
-.tab.active { background: #28282c; color: #e0e0e5; }
 
 .tab-dot {
     width: 8px;
@@ -53,7 +75,13 @@ body {
     opacity: 0.7;
 }
 
-.tab.active .tab-dot { opacity: 1; }
+.dv-tab.active-tab .tab-dot {
+    opacity: 1;
+}
+
+.dv-tab.active-tab .tab-item {
+    color: #e0e0e5;
+}
 
 .tab-title {
     flex: 1;
@@ -63,36 +91,21 @@ body {
     font-size: 11.5px;
 }
 
-.tab-close {
-    flex-shrink: 0;
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    font-size: 14px;
-    color: #8b8b8f;
+/* ── Webview container ────────────────────────────────────────────────────── */
+
+.webview-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
-.tab:hover .tab-close,
-.tab.active .tab-close { opacity: 1; }
-.tab-close:hover { background: #3a3a3e; color: #e0e0e5; }
-
-.add-btn {
-    flex-shrink: 0;
-    width: 26px;
-    height: 26px;
-    border-radius: 5px;
+webview {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 18px;
-    color: #555;
-    margin-right: 6px;
-    -webkit-app-region: no-drag;
+    width: 100%;
+    height: 100%;
 }
 
-.add-btn:hover { background: #222225; color: #aaa; }
+/* ── Dockview UI chrome ───────────────────────────────────────────────────── */
+
+/* resize handles between panels */
+.dv-sash-container .dv-sash { background: #27272b; }
