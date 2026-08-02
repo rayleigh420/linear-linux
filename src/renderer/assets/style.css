@@ -91,20 +91,6 @@ html, body {
     font-size: 11.5px;
 }
 
-/* ── Webview container ────────────────────────────────────────────────────── */
-
-.webview-container {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-webview {
-    display: flex;
-    width: 100%;
-    height: 100%;
-}
-
 /* ── Dockview UI chrome ───────────────────────────────────────────────────── */
 
 /* resize handles between panels */

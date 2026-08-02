@@ -1,46 +1,46 @@
 import { useEffect, useRef } from 'react'
 import type { IDockviewPanelProps } from 'dockview-react'
-import { createWebview, removeWebview, syncWebviewPosition, hideWebview } from './webviewManager'
+import { createView, removeView, syncViewBounds, hideView } from './webviewManager'
 
 export interface WebviewPanelParams {
-  url: string
-  preloadPath: string
+	url: string
 }
 
-export function WebviewPanel({ api, params }: IDockviewPanelProps<WebviewPanelParams>): React.JSX.Element {
-  const placeholderRef = useRef<HTMLDivElement>(null)
+export function WebviewPanel({
+	api,
+	params
+}: IDockviewPanelProps<WebviewPanelParams>): React.JSX.Element {
+	const placeholderRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const id = api.id
-    const placeholder = placeholderRef.current!
+	useEffect(() => {
+		const id = api.id
+		const placeholder = placeholderRef.current!
+		let visible = true
 
-    createWebview(id, params.url, params.preloadPath, (title) => {
-      api.setTitle(title)
-    })
+		createView(id, params.url, (title) => api.setTitle(title))
 
-    // Sync position whenever the placeholder is resized (split resize, tab drag)
-    const observer = new ResizeObserver(() => syncWebviewPosition(id, placeholder))
-    observer.observe(placeholder)
+		const observer = new ResizeObserver(() => {
+			if (visible) syncViewBounds(id, placeholder)
+		})
+		observer.observe(placeholder)
 
-    // Explicit visibility signal from dockview when switching tabs
-    const disposeVis = api.onDidVisibilityChange((e) => {
-      if (!e.isVisible) {
-        hideWebview(id)
-      } else {
-        requestAnimationFrame(() => syncWebviewPosition(id, placeholder))
-      }
-    })
+		const disposeVis = api.onDidVisibilityChange((e) => {
+			visible = e.isVisible
+			if (!e.isVisible) {
+				hideView(id)
+			} else {
+				requestAnimationFrame(() => syncViewBounds(id, placeholder))
+			}
+		})
 
-    // Initial position after first layout frame
-    requestAnimationFrame(() => syncWebviewPosition(id, placeholder))
+		requestAnimationFrame(() => syncViewBounds(id, placeholder))
 
-    return () => {
-      observer.disconnect()
-      disposeVis.dispose()
-      removeWebview(id)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+		return () => {
+			observer.disconnect()
+			disposeVis.dispose()
+			removeView(id)
+		}
+	}, [])
 
-  return <div ref={placeholderRef} style={{ width: '100%', height: '100%' }} />
+	return <div ref={placeholderRef} style={{ width: '100%', height: '100%' }} />
 }
