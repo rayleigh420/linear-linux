@@ -159,31 +159,29 @@ jobs:
             git push
           fi
 
-      - name: Update apt repository on gh-pages
+      - name: Publish apt repository to the release
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.version.outputs.version }}
         run: |
+          # The .deb files are release assets, NOT committed to git: an Electron .deb is
+          # ~100MB and GitHub rejects any file >100MB pushed to a branch (this used to
+          # push them to gh-pages and fail). Instead we host the whole flat apt repo on
+          # the release itself — metadata assets sit next to the .deb files and apt reads
+          # them from https://github.com/OWNER/REPO/releases/latest/download/.
           echo "$GPG_PRIVATE_KEY" | gpg --batch --import
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git fetch origin gh-pages
-          git worktree add /tmp/gh-pages origin/gh-pages
-
-          # Export public key (derived from imported private key)
-          gpg --armor --export rayleigh420@users.noreply.github.com > /tmp/gh-pages/gpg.key
-
-          cd /tmp/gh-pages
-
-          # Replace debs — keep only latest version
-          rm -f *.deb
-          cp "$GITHUB_WORKSPACE/dist"/*.deb .
-
-          # Generate apt metadata
           sudo apt-get install -y --no-install-recommends dpkg-dev 2>/dev/null || true
+
+          cd "$GITHUB_WORKSPACE/dist"
+
+          # Public signing key
+          gpg --armor --export rayleigh420@users.noreply.github.com > gpg.key
+
+          # Generate apt metadata. Strip the leading "./" from Filename so each entry
+          # resolves as a bare asset name under the release's /latest/download/ base URL.
           dpkg-scanpackages --multiversion . > Packages
+          sed -i 's|^Filename: \./|Filename: |' Packages
           gzip -9 -k -f Packages
 
           # Generate Release file with checksums
@@ -208,9 +206,10 @@ jobs:
           gpg --batch --yes -abs -o Release.gpg Release
           gpg --batch --yes --clearsign -o InRelease Release
 
-          git add -A
-          git diff --cached --quiet || git commit -m "apt: release v${VERSION} [skip ci]"
-          git push origin HEAD:gh-pages
+          # Attach the apt metadata to the release, next to the .deb assets.
+          gh release upload "v${VERSION}" \
+            Packages Packages.gz Release Release.gpg InRelease gpg.key \
+            --clobber
 
       - name: Merge release back to master
         env:

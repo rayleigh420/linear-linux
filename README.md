@@ -18,11 +18,11 @@
 One-time setup:
 
 ```bash
-curl -fsSL https://rayleigh420.github.io/linear-linux/gpg.key \
+curl -fsSL https://github.com/rayleigh420/linear-linux/releases/latest/download/gpg.key \
   | sudo gpg --dearmor -o /etc/apt/keyrings/linear-linux.gpg
 
-echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/linear-linux.gpg] \
-https://rayleigh420.github.io/linear-linux ./" \
+echo "deb [signed-by=/etc/apt/keyrings/linear-linux.gpg] \
+https://github.com/rayleigh420/linear-linux/releases/latest/download/ ./" \
   | sudo tee /etc/apt/sources.list.d/linear-linux.list
 
 sudo apt update

@@ -1,8 +1,9 @@
-import eslintConfig from '@electron-toolkit/eslint-config'
+import { defineConfig } from 'eslint/config'
+import tseslint from '@electron-toolkit/eslint-config-ts'
 import eslintConfigPrettier from '@electron-toolkit/eslint-config-prettier'
 
-export default [
+export default defineConfig(
   { ignores: ['**/node_modules', '**/dist', '**/out'] },
-  eslintConfig,
+  tseslint.configs.recommended,
   eslintConfigPrettier
-]
+)
