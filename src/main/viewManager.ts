@@ -61,11 +61,23 @@ export function destroyView(panelId: string): void {
 
 export function setupViewIpc(): void {
 	const ses = session.fromPartition('persist:linear')
-	ses.setPermissionRequestHandler((_, permission, callback, details) => {
-		const isLinear = ((details as Electron.PermissionRequest)?.requestingUrl ?? '').startsWith(
-			'https://linear.app'
-		)
-		callback(permission === 'notifications' && isLinear)
+
+	const ALLOWED: ReadonlySet<string> = new Set([
+		'notifications',
+		'clipboard-read',
+		'clipboard-sanitized-write'
+	])
+	const isLinearUrl = (url?: string | null): boolean =>
+		!!url && url.startsWith('https://linear.app')
+
+	ses.setPermissionRequestHandler((_wc, permission, callback, details) => {
+		const url = (details as Electron.PermissionRequest)?.requestingUrl
+		callback(ALLOWED.has(permission) && isLinearUrl(url))
+	})
+
+	ses.setPermissionCheckHandler((_wc, permission, requestingOrigin, details) => {
+		const url = requestingOrigin || (details as { requestingUrl?: string })?.requestingUrl
+		return ALLOWED.has(permission) && isLinearUrl(url)
 	})
 
 	ipcMain.on('wcv-shortcut', (e, action: string) => {
