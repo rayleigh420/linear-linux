@@ -35,6 +35,15 @@ if (is.dev) {
 	process.on('SIGTERM', devQuit)
 }
 
+if (!app.requestSingleInstanceLock()) {
+	// A primary instance already owns the app (alive in the tray). Exit so we don't spawn
+	// a second window + second tray; the primary handles the reopen via 'second-instance'.
+	app.quit()
+	process.exit(0)
+}
+
+app.on('second-instance', () => focusOrCreate())
+
 app.whenReady().then(() => {
 	WindowState.init(app.getPath('userData'))
 	electronApp.setAppUserModelId(is.dev ? 'app.linear.linux.dev' : 'app.linear.linux')
